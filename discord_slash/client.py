@@ -2,7 +2,7 @@ import copy
 import logging
 import typing
 import discord
-from inspect import iscoroutinefunction, getdoc
+from inspect import iscoroutinefunction
 from contextlib import suppress
 from discord.ext import commands
 from . import http
@@ -396,9 +396,6 @@ class SlashCommand:
             for x in tgt.allowed_guild_ids:
                 if x not in guild_ids:
                     guild_ids.append(x)
-
-        description = description or getdoc(cmd)
-
         if options is None:
             options = manage_commands.generate_options(cmd, description, connector)
 
@@ -454,7 +451,6 @@ class SlashCommand:
         subcommand_group = subcommand_group.lower() if subcommand_group else subcommand_group
         name = name or cmd.__name__
         name = name.lower()
-        description = description or getdoc(cmd)
         guild_ids = guild_ids if guild_ids else []
 
         if base in self.commands:

@@ -12,5 +12,4 @@ from .client import SlashCommand
 from .model import SlashCommandOptionType
 from .context import SlashContext
 from .utils import manage_commands
-
-__version__ = "1.1.2"
+from .const import __version__

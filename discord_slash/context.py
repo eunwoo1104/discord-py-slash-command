@@ -1,9 +1,7 @@
 import typing
-import asyncio
 from warnings import warn
 
 import discord
-from contextlib import suppress
 from discord.ext import commands
 from . import http
 from . import error

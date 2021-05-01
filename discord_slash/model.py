@@ -1,10 +1,11 @@
 import asyncio
-import discord
-from enum import IntEnum
 from contextlib import suppress
+from enum import IntEnum
 from inspect import iscoroutinefunction
-from . import http
-from . import error
+
+import discord
+
+from . import error, http
 
 
 class ChoiceData:
@@ -34,9 +35,7 @@ class OptionData:
     :ivar options: List of :class:`OptionData`, this will be present if it's a subcommand group
     """
 
-    def __init__(
-            self, name, description, required=False, choices=None, options=None, **kwargs
-    ):
+    def __init__(self, name, description, required=False, choices=None, options=None, **kwargs):
         self.name = name
         self.description = description
         self.type = kwargs.get("type")
@@ -75,7 +74,7 @@ class CommandData:
     """
 
     def __init__(
-            self, name, description, options=None, id=None, application_id=None, version=None, **kwargs
+        self, name, description, options=None, id=None, application_id=None, version=None, **kwargs
     ):
         self.name = name
         self.description = description
@@ -92,9 +91,9 @@ class CommandData:
     def __eq__(self, other):
         if isinstance(other, CommandData):
             return (
-                    self.name == other.name
-                    and self.description == other.description
-                    and self.options == other.options
+                self.name == other.name
+                and self.description == other.description
+                and self.options == other.options
             )
         else:
             return False
@@ -128,7 +127,7 @@ class CommandObject:
         # Since this isn't inherited from `discord.ext.commands.Command`, discord.py's check decorator will
         # add checks at this var.
         self.__commands_checks__ = []
-        if hasattr(self.func, '__commands_checks__'):
+        if hasattr(self.func, "__commands_checks__"):
             self.__commands_checks__ = self.func.__commands_checks__
 
     async def invoke(self, *args, **kwargs):
@@ -172,7 +171,10 @@ class CommandObject:
         :type ctx: .context.SlashContext
         :return: bool
         """
-        res = [bool(x(ctx)) if not iscoroutinefunction(x) else bool(await x(ctx)) for x in self.__commands_checks__]
+        res = [
+            bool(x(ctx)) if not iscoroutinefunction(x) else bool(await x(ctx))
+            for x in self.__commands_checks__
+        ]
         return False not in res
 
 
@@ -257,6 +259,7 @@ class SlashCommandOptionType(IntEnum):
     """
     Equivalent of `ApplicationCommandOptionType <https://discord.com/developers/docs/interactions/slash-commands#applicationcommandoptiontype>`_  in the Discord API.
     """
+
     SUB_COMMAND = 1
     SUB_COMMAND_GROUP = 2
     STRING = 3
@@ -274,13 +277,19 @@ class SlashCommandOptionType(IntEnum):
         :param t: The type or object to get a SlashCommandOptionType for.
         :return: :class:`.model.SlashCommandOptionType` or ``None``
         """
-        if issubclass(t, str): return cls.STRING
-        if issubclass(t, bool): return cls.BOOLEAN
+        if issubclass(t, str):
+            return cls.STRING
+        if issubclass(t, bool):
+            return cls.BOOLEAN
         # The check for bool MUST be above the check for integers as booleans subclass integers
-        if issubclass(t, int): return cls.INTEGER
-        if issubclass(t, discord.abc.User): return cls.USER
-        if issubclass(t, discord.abc.GuildChannel): return cls.CHANNEL
-        if issubclass(t, discord.abc.Role): return cls.ROLE
+        if issubclass(t, int):
+            return cls.INTEGER
+        if issubclass(t, discord.abc.User):
+            return cls.USER
+        if issubclass(t, discord.abc.GuildChannel):
+            return cls.CHANNEL
+        if issubclass(t, discord.abc.Role):
+            return cls.ROLE
 
 
 class SlashMessage(discord.Message):
@@ -323,8 +332,13 @@ class SlashMessage(discord.Message):
             _resp["embeds"] = [x.to_dict() for x in embeds]
 
         allowed_mentions = fields.get("allowed_mentions")
-        _resp["allowed_mentions"] = allowed_mentions.to_dict() if allowed_mentions else \
-            self._state.allowed_mentions.to_dict() if self._state.allowed_mentions else {}
+        _resp["allowed_mentions"] = (
+            allowed_mentions.to_dict()
+            if allowed_mentions
+            else self._state.allowed_mentions.to_dict()
+            if self._state.allowed_mentions
+            else {}
+        )
 
         await self._http.edit(_resp, self.__interaction_token, self.id, files=files)
 

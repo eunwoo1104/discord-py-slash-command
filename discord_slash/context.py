@@ -1,13 +1,10 @@
 import typing
-import asyncio
 from warnings import warn
 
 import discord
-from contextlib import suppress
 from discord.ext import commands
-from . import http
-from . import error
-from . import model
+
+from . import error, http, model
 
 
 class SlashContext:
@@ -38,11 +35,13 @@ class SlashContext:
     :ivar author: User or Member instance of the command invoke.
     """
 
-    def __init__(self,
-                 _http: http.SlashCommandRequest,
-                 _json: dict,
-                 _discord: typing.Union[discord.Client, commands.Bot],
-                 logger):
+    def __init__(
+        self,
+        _http: http.SlashCommandRequest,
+        _json: dict,
+        _discord: typing.Union[discord.Client, commands.Bot],
+        logger,
+    ):
         self.__token = _json["token"]
         self.message = None  # Should be set later.
         self.name = self.command = self.invoked_with = _json["data"]["name"]
@@ -59,10 +58,14 @@ class SlashContext:
         self.responded = False
         self._deferred_hidden = False  # To check if the patch to the deferred response matches
         self.guild_id = int(_json["guild_id"]) if "guild_id" in _json.keys() else None
-        self.author_id = int(_json["member"]["user"]["id"] if "member" in _json.keys() else _json["user"]["id"])
+        self.author_id = int(
+            _json["member"]["user"]["id"] if "member" in _json.keys() else _json["user"]["id"]
+        )
         self.channel_id = int(_json["channel_id"])
         if self.guild:
-            self.author = discord.Member(data=_json["member"], state=self.bot._connection, guild=self.guild)
+            self.author = discord.Member(
+                data=_json["member"], state=self.bot._connection, guild=self.guild
+            )
         elif self.guild_id:
             self.author = discord.User(data=_json["member"]["user"], state=self.bot._connection)
         else:
@@ -70,12 +73,20 @@ class SlashContext:
 
     @property
     def _deffered_hidden(self):
-        warn("`_deffered_hidden` as been renamed to `_deferred_hidden`.", DeprecationWarning, stacklevel=2)
+        warn(
+            "`_deffered_hidden` as been renamed to `_deferred_hidden`.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self._deferred_hidden
 
     @_deffered_hidden.setter
     def _deffered_hidden(self, value):
-        warn("`_deffered_hidden` as been renamed to `_deferred_hidden`.", DeprecationWarning, stacklevel=2)
+        warn(
+            "`_deffered_hidden` as been renamed to `_deferred_hidden`.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self._deferred_hidden = value
 
     @property
@@ -121,16 +132,19 @@ class SlashContext:
         await self._http.post_initial_response(base, self.interaction_id, self.__token)
         self.deferred = True
 
-    async def send(self,
-                   content: str = "", *,
-                   embed: discord.Embed = None,
-                   embeds: typing.List[discord.Embed] = None,
-                   tts: bool = False,
-                   file: discord.File = None,
-                   files: typing.List[discord.File] = None,
-                   allowed_mentions: discord.AllowedMentions = None,
-                   hidden: bool = False,
-                   delete_after: float = None) -> model.SlashMessage:
+    async def send(
+        self,
+        content: str = "",
+        *,
+        embed: discord.Embed = None,
+        embeds: typing.List[discord.Embed] = None,
+        tts: bool = False,
+        file: discord.File = None,
+        files: typing.List[discord.File] = None,
+        allowed_mentions: discord.AllowedMentions = None,
+        hidden: bool = False,
+        delete_after: float = None
+    ) -> model.SlashMessage:
         """
         Sends response of the slash command.
 
@@ -182,8 +196,11 @@ class SlashContext:
             "content": content,
             "tts": tts,
             "embeds": [x.to_dict() for x in embeds] if embeds else [],
-            "allowed_mentions": allowed_mentions.to_dict() if allowed_mentions
-            else self.bot.allowed_mentions.to_dict() if self.bot.allowed_mentions else {}
+            "allowed_mentions": allowed_mentions.to_dict()
+            if allowed_mentions
+            else self.bot.allowed_mentions.to_dict()
+            if self.bot.allowed_mentions
+            else {},
         }
         if hidden:
             if embeds or files:
@@ -204,10 +221,7 @@ class SlashContext:
                 resp = await self._http.edit(base, self.__token, files=files)
                 self.deferred = False
             else:
-                json_data = {
-                    "type": 4,
-                    "data": base
-                }
+                json_data = {"type": 4, "data": base}
                 await self._http.post_initial_response(json_data, self.interaction_id, self.__token)
                 if not hidden:
                     resp = await self._http.edit({}, self.__token)
@@ -220,11 +234,13 @@ class SlashContext:
             for file in files:
                 file.close()
         if not hidden:
-            smsg = model.SlashMessage(state=self.bot._connection,
-                                      data=resp,
-                                      channel=self.channel or discord.Object(id=self.channel_id),
-                                      _http=self._http,
-                                      interaction_token=self.__token)
+            smsg = model.SlashMessage(
+                state=self.bot._connection,
+                data=resp,
+                channel=self.channel or discord.Object(id=self.channel_id),
+                _http=self._http,
+                interaction_token=self.__token,
+            )
             if delete_after:
                 self.bot.loop.create_task(smsg.delete(delay=delete_after))
             if initial_message:

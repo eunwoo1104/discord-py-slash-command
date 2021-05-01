@@ -1,15 +1,18 @@
-import typing
 import inspect
+import typing
+
 from .model import CogCommandObject, CogSubcommandObject
 from .utils import manage_commands
 
 
-def cog_slash(*,
-              name: str = None,
-              description: str = None,
-              guild_ids: typing.List[int] = None,
-              options: typing.List[dict] = None,
-              connector: dict = None):
+def cog_slash(
+    *,
+    name: str = None,
+    description: str = None,
+    guild_ids: typing.List[int] = None,
+    options: typing.List[dict] = None,
+    connector: dict = None
+):
     """
     Decorator for Cog to add slash command.\n
     Almost same as :func:`.client.SlashCommand.slash`.
@@ -37,6 +40,7 @@ def cog_slash(*,
     :param connector: Kwargs connector for the command. Default ``None``.
     :type connector: dict
     """
+
     def wrapper(cmd):
         desc = description or inspect.getdoc(cmd)
         if options is None:
@@ -50,24 +54,27 @@ def cog_slash(*,
             "guild_ids": guild_ids,
             "api_options": opts,
             "connector": connector,
-            "has_subcommands": False
+            "has_subcommands": False,
         }
         return CogCommandObject(name or cmd.__name__, _cmd)
+
     return wrapper
 
 
-def cog_subcommand(*,
-                   base,
-                   subcommand_group=None,
-                   name=None,
-                   description: str = None,
-                   base_description: str = None,
-                   base_desc: str = None,
-                   subcommand_group_description: str = None,
-                   sub_group_desc: str = None,
-                   guild_ids: typing.List[int] = None,
-                   options: typing.List[dict] = None,
-                   connector: dict = None):
+def cog_subcommand(
+    *,
+    base,
+    subcommand_group=None,
+    name=None,
+    description: str = None,
+    base_description: str = None,
+    base_desc: str = None,
+    subcommand_group_description: str = None,
+    sub_group_desc: str = None,
+    guild_ids: typing.List[int] = None,
+    options: typing.List[dict] = None,
+    connector: dict = None
+):
     """
     Decorator for Cog to add subcommand.\n
     Almost same as :func:`.client.SlashCommand.subcommand`.
@@ -123,7 +130,8 @@ def cog_subcommand(*,
             "sub_group_desc": subcommand_group_description,
             "guild_ids": guild_ids,
             "api_options": opts,
-            "connector": connector
+            "connector": connector,
         }
         return CogSubcommandObject(_sub, base, name or cmd.__name__, subcommand_group)
+
     return wrapper
